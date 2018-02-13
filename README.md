@@ -10,7 +10,7 @@ This example demonstrates how to print to network, USB and Bluetooth connected r
 * Add IOS project: ``` cordova platform add ios ``` 
 * Add Android project: ``` cordova platform add android ``` 
 * Build and Run IOS project: ``` cordova run ios  / ionic run ios -l -c ``` 
-* Build and Run Android project: ``` cordova run andorid  / ionic run andorid -l -c ``` 
+* Build and Run Android project: ``` cordova run android  / ionic run android -l -c ``` 
 
 ## Resources
 
