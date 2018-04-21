@@ -1,4 +1,38 @@
-﻿angular.module('starter.controllers', ['starter.services'])
+﻿function pickerImage(callback) {
+  var input = document.createElement('input');
+  input.setAttribute('type', 'file');
+  input.setAttribute('accept', 'image/bmp');
+
+  // Note: In modern browsers input[type="file"] is functional without
+  // even adding it to the DOM, but that might not be the case in some older
+  // or quirky browsers like IE, so you might want to add it to the DOM
+  // just in case, and visually hide it. And do not forget do remove it
+  // once you do not need it anymore.
+
+  input.onchange = function () {
+    var file = this.files[0];
+    var dataUrlReader = new FileReader();
+    dataUrlReader.onloadend = function (e) {
+      var img = new Image;
+      img.onload = function () {
+        // image is loaded; sizes are available
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var data = new Uint8Array(e.target.result);
+          //打印纸的打印区宽度，80的为576,58的384，76的为508
+          //printer 80nm:578px; printer 58nm:384px;printer 76nm:508px
+          callback(img.width, img.height, data)
+          /* DO SOMETHING WITH workbook HERE */
+        };
+        reader.readAsArrayBuffer(file);
+      };
+      img.src = dataUrlReader.result;
+    }
+    dataUrlReader.readAsDataURL(file);
+  };
+  input.click();
+}
+angular.module('starter.controllers', ['starter.services'])
 
   .controller('WiFiCtrl', function ($scope) {
     var socketId = null;
@@ -9,6 +43,14 @@
         return;
       }
       var uint8array = new TextEncoder('gb18030', { NONSTANDARD_allowLegacyEncoding: true }).encode(content);
+      chrome.sockets.tcp.send(socketId,
+        uint8array.buffer,
+        function (result) {
+          console.log(angular.toJson(result));
+        }
+      )
+    }
+    function rawPrint(socketId, uint8array) {
       chrome.sockets.tcp.send(socketId,
         uint8array.buffer,
         function (result) {
@@ -40,6 +82,11 @@
     $scope.print = function () {
       print(socketId, "cordova-posprinter-sample");
     }
+    $scope.useEscCommandPrintImage = function () {
+      pickerImage(function (width, height, data) {
+        rawPrint(socketId, Esc.printImage(0, img.width, img.height, data))
+      })
+    }
     $scope.printEscCommand = function () {
       var escCommand = Esc.InitializePrinter +
         Esc.TextAlignRight + "HelloWorld!\n" +
@@ -51,6 +98,11 @@
         Esc.DoubleOn + "HelloWorld!\n" + Esc.DoubleOff +
         Esc.PrintAndFeedMaxLine;
       print(socketId, escCommand);
+    }
+    $scope.useTscCommandPrintImage = function () {
+      pickerImage(function (width, height, data) {
+        rawPrint(socketId, Tsc.printImage(0, 0, img.width, img.height, 0, data))
+      })
     }
     $scope.printTscCommand = function () {
       var tscCommand = Tsc.text(100, 100, "4", 0, 1, 1, "DEMO FOR TEXT") + Tsc.print(1);
@@ -100,9 +152,22 @@
       var uint8array = new TextEncoder('gb18030', { NONSTANDARD_allowLegacyEncoding: true }).encode(content);
       bluetooth.write(uint8array.buffer, $scope.deviceId);
     }
+    function rawPrint(uint8array) {
+      bluetooth.write(uint8array.buffer, $scope.deviceId);
+    }
     $scope.print = function () {
       var content = "HelloWorld!\n";
       print(content);
+    }
+    $scope.useEscCommandPrintImage = function () {
+      pickerImage(function (width, height, data) {
+        rawPrint(socketId, Esc.printImage(0, img.width, img.height, data))
+      })
+    }
+    $scope.useTscCommandPrintImage = function () {
+      pickerImage(function (width, height, data) {
+        rawPrint(socketId, Tsc.printImage(0, 0, img.width, img.height, 0, data))
+      })
     }
     $scope.printEscCommand = function () {
       var escCommand = Esc.InitializePrinter +
@@ -113,7 +178,7 @@
         Esc.DoubleHeight + "HelloWorld!\n" + Esc.DoubleOff +
         Esc.DoubleWidth + "HelloWorld!\n" + Esc.DoubleOff +
         Esc.DoubleOn + "HelloWorld!\n" + Esc.DoubleOff +
-        Esc.PrintAndFeedMaxLine + Esc.CutAndFeedLine();
+        Esc.PrintAndFeedMaxLine + Esc.cutAndFeedLine();
       print(escCommand);
     }
     $scope.printTscCommand = function () {
