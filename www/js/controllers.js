@@ -161,12 +161,12 @@ angular.module('starter.controllers', ['starter.services'])
     }
     $scope.useEscCommandPrintImage = function () {
       pickerImage(function (width, height, data) {
-        rawPrint(socketId, Esc.printImage(0, img.width, img.height, data))
+        rawPrint(Esc.printImage(0, img.width, img.height, data))
       })
     }
     $scope.useTscCommandPrintImage = function () {
       pickerImage(function (width, height, data) {
-        rawPrint(socketId, Tsc.printImage(0, 0, img.width, img.height, 0, data))
+        rawPrint(Tsc.printImage(0, 0, img.width, img.height, 0, data))
       })
     }
     $scope.printEscCommand = function () {
