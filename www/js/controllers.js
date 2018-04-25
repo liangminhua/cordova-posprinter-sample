@@ -1,7 +1,39 @@
-﻿function pickerImage(callback) {
+﻿function getImageData(image, opts) {
+  opts = opts || {}
+  opts.x = opts.x || 0
+  opts.y = opts.y || 0
+  opts.width = typeof opts.width === 'number' ? opts.width : image.width
+  opts.height = typeof opts.height === 'number' ? opts.height : image.height
+  var canvas = document.createElement("canvas")
+  var context = canvas.getContext('2d')
+  canvas.width = opts.width
+  canvas.height = opts.height
+  context.drawImage(image, opts.x, opts.y, opts.width, opts.height, 0, 0, opts.width, opts.height)
+  var imgData
+  try {
+    imgData = context.getImageData(0, 0, opts.width, opts.height)
+  } catch (e) {
+    throw e
+  }
+
+  return imgData
+}
+function RGBToDot(RGBs) {
+  var piexlsData = [];
+  for (var index = 0; index < RGBs.length; index += 4) {
+    var R = RGBs[index];
+    var G = RGBs[index + 1];
+    var B = RGBs[index + 2];
+    var A = RGBs[index + 3];
+    var dot = A << 24 + R << 16 + G << 8 + B;
+    piexlsData.push(dot);
+  }
+  return piexlsData;
+}
+function pickerImage(callback) {
   var input = document.createElement('input');
   input.setAttribute('type', 'file');
-  input.setAttribute('accept', 'image/bmp');
+  input.setAttribute('accept', 'image/*');
 
   // Note: In modern browsers input[type="file"] is functional without
   // even adding it to the DOM, but that might not be the case in some older
@@ -15,16 +47,19 @@
     dataUrlReader.onloadend = function (e) {
       var img = new Image;
       img.onload = function () {
+        var imageData = getImageData(img);
+        var piexlsData = RGBToDot(imageData.data);
         // image is loaded; sizes are available
-        var reader = new FileReader();
-        reader.onload = function (e) {
-          var data = new Uint8Array(e.target.result);
-          //打印纸的打印区宽度，80的为576,58的384，76的为508
-          //printer 80nm:578px; printer 58nm:384px;printer 76nm:508px
-          callback(img.width, img.height, data)
-          /* DO SOMETHING WITH workbook HERE */
-        };
-        reader.readAsArrayBuffer(file);
+        callback(img.width, img.height, piexlsData);
+        // var reader = new FileReader();
+        // reader.onload = function (e) {
+        //   var data = new Uint8Array(e.target.result);
+        //   //打印纸的打印区宽度，80的为576,58的384，76的为508
+        //   //printer 80nm:578px; printer 58nm:384px;printer 76nm:508px
+        //   callback(img.width, img.height, data)
+        //   /* DO SOMETHING WITH workbook HERE */
+        // };
+        // reader.readAsArrayBuffer(file);
       };
       img.src = dataUrlReader.result;
     }
@@ -84,7 +119,9 @@ angular.module('starter.controllers', ['starter.services'])
     }
     $scope.useEscCommandPrintImage = function () {
       pickerImage(function (width, height, data) {
-        rawPrint(socketId, Esc.printImage(0, img.width, img.height, data))
+        var escCommand = Esc.printImage(0, width, height, data)
+        console.log(escCommand)
+        rawPrint(socketId, Esc.printImage(0, width, height, data))
       })
     }
     $scope.printEscCommand = function () {
@@ -101,7 +138,9 @@ angular.module('starter.controllers', ['starter.services'])
     }
     $scope.useTscCommandPrintImage = function () {
       pickerImage(function (width, height, data) {
-        rawPrint(socketId, Tsc.printImage(0, 0, img.width, img.height, 0, data))
+        var tscCommand = Tsc.printImage(0, 0, width, height, 0, data);
+        console.log(tscCommand)
+        rawPrint(socketId, Tsc.printImage(0, 0, width, height, 0, data))
       })
     }
     $scope.printTscCommand = function () {
@@ -161,12 +200,12 @@ angular.module('starter.controllers', ['starter.services'])
     }
     $scope.useEscCommandPrintImage = function () {
       pickerImage(function (width, height, data) {
-        rawPrint(Esc.printImage(0, img.width, img.height, data))
+        rawPrint(Esc.printImage(0, width, height, data))
       })
     }
     $scope.useTscCommandPrintImage = function () {
       pickerImage(function (width, height, data) {
-        rawPrint(Tsc.printImage(0, 0, img.width, img.height, 0, data))
+        rawPrint(Tsc.printImage(0, 0, width, height, 0, data))
       })
     }
     $scope.printEscCommand = function () {
