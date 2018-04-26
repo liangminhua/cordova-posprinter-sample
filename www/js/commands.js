@@ -1,4 +1,4 @@
-var EscCommand = /** @class */ (function () {
+var EscCommand = /** @class */ (function() {
   function EscCommand() {
     this.ESC = "\u001B";
     this.GS = "\u001D";
@@ -14,43 +14,46 @@ var EscCommand = /** @class */ (function () {
     this.TextAlignCenter = this.ESC + "a" + "1";
     this.TextAlignRight = this.ESC + "a" + "2";
   }
-  EscCommand.prototype.printAndFeedLine = function (verticalUnit) {
-    if (verticalUnit > 255)
-      verticalUnit = 255;
-    if (verticalUnit < 0)
-      verticalUnit = 0;
+  EscCommand.prototype.printAndFeedLine = function(verticalUnit) {
+    if (verticalUnit > 255) verticalUnit = 255;
+    if (verticalUnit < 0) verticalUnit = 0;
     return this.ESC + "J" + String.fromCharCode(verticalUnit);
   };
-  EscCommand.prototype.cutAndFeedLine = function (verticalUnit) {
+  EscCommand.prototype.cutAndFeedLine = function(verticalUnit) {
     if (verticalUnit === void 0) {
       return this.ESC + "V" + 1;
     }
-    if (verticalUnit > 255)
-      verticalUnit = 255;
-    if (verticalUnit < 0)
-      verticalUnit = 0;
+    if (verticalUnit > 255) verticalUnit = 255;
+    if (verticalUnit < 0) verticalUnit = 0;
     return this.ESC + "V" + 66 + String.fromCharCode(verticalUnit);
   };
-  EscCommand.prototype.printImage = function (mode, width, height, bitmapArray) {
-    var xL = Math.floor((width + 7) / 8 % 256);
+  //打印机宽度，80nm等于576px,58nm等于384px，76nm等于508px
+  //printer width, 80nm equal 578px; 58nm equal 384px; 76nm equal 508px
+  // mode
+  // 0,48 standard mode
+  // 1,49 multiple-width mode
+  // 2,50 multiple-height mode
+  // 3,51 multiple-width and multiple-height mode
+  EscCommand.prototype.printImage = function(mode, width, height, bitmapArray) {
+    var xL = Math.floor(((width + 7) / 8) % 256);
     var xH = Math.floor((width + 7) / 8 / 256);
     var yL = Math.floor(height % 256);
     var yH = Math.floor(height / 256);
     var command = new Uint8Array(bitmapArray.length + 8);
     //GS V 0
-    command.set([0x1D, 0x76, 0x30, mode & 0x1, xL, xH, yL, yH], 0);
+    command.set([0x1d, 0x76, 0x30, mode & 0x1, xL, xH, yL, yH], 0);
     command.set(bitmapArray, 8);
     return command;
   };
   return EscCommand;
-}());
-var TscCommand = /** @class */ (function () {
+})();
+var TscCommand = /** @class */ (function() {
   function TscCommand(parameters) {
     this.HOME = "HOME\n";
     this.CUT = "CUT\n";
     this.INITIALPRINTER = "INITIALPRINTER\n";
   }
-  TscCommand.prototype.sound = function (level, interval) {
+  TscCommand.prototype.sound = function(level, interval) {
     return "SOUND " + level + "," + interval + "\n";
   };
   // X      The x-coordinate of the text
@@ -70,15 +73,38 @@ var TscCommand = /** @class */ (function () {
   // Rotation 0 90 180 270
   // x_multiplication    Horizontal multiplication, up to 10x.Available factors: 1~10 width (point) of true type font. 1 point=1/72 inch.
   // y_multiplication    Vertical multiplication, up to 10x. Available factors: 1~10 For true type font, this parameter is used to specify the height (point) of true type font. 1 point=1/72 inch.
-  TscCommand.prototype.text = function (x, y, font, rotation, x_multiplication, y_multiplication, content) {
-    var str = "TEXT " + x + "," + y + ",\"" + font + "\"," + rotation + "," + x_multiplication + "," + y_multiplication + ",\"" + content + "\"\n";
+  TscCommand.prototype.text = function(
+    x,
+    y,
+    font,
+    rotation,
+    x_multiplication,
+    y_multiplication,
+    content
+  ) {
+    var str =
+      "TEXT " +
+      x +
+      "," +
+      y +
+      ',"' +
+      font +
+      '",' +
+      rotation +
+      "," +
+      x_multiplication +
+      "," +
+      y_multiplication +
+      ',"' +
+      content +
+      '"\n';
     return str;
   };
   //200DPI 1mm=8dots
-  TscCommand.prototype.feed = function (dots) {
+  TscCommand.prototype.feed = function(dots) {
     return "FEED " + dots + "\n";
   };
-  TscCommand.prototype.print = function (count) {
+  TscCommand.prototype.print = function(count) {
     if (count === void 0) {
       count = 1;
     }
@@ -88,11 +114,33 @@ var TscCommand = /** @class */ (function () {
   // 0: OVERWRITE
   // 1: OR
   // 2: XOR
-  TscCommand.prototype.printImage = function (x, y, width, heigth, mode, bitmapBuffer) {
-    var start = "BITMAP " + x + "," + y + "," + Math.floor(width + 7 / 8) + "," + heigth + "," + mode + ",";
-    start = new TextEncoder('gb18030', { NONSTANDARD_allowLegacyEncoding: true }).encode(start);
+  TscCommand.prototype.printImage = function(
+    x,
+    y,
+    width,
+    heigth,
+    mode,
+    bitmapBuffer
+  ) {
+    var start =
+      "BITMAP " +
+      x +
+      "," +
+      y +
+      "," +
+      Math.floor((width + 7) / 8) +
+      "," +
+      heigth +
+      "," +
+      mode +
+      ",";
+    start = new TextEncoder("gb18030", {
+      NONSTANDARD_allowLegacyEncoding: true
+    }).encode(start);
     var end = "\n";
-    end = new TextEncoder('gb18030', { NONSTANDARD_allowLegacyEncoding: true }).encode(end);
+    end = new TextEncoder("gb18030", {
+      NONSTANDARD_allowLegacyEncoding: true
+    }).encode(end);
     var image = new Uint8Array(bitmapBuffer);
     var ret = new Uint8Array(start.length + image.length + end.length);
     ret.set(start, 0);
@@ -101,6 +149,6 @@ var TscCommand = /** @class */ (function () {
     return ret;
   };
   return TscCommand;
-}());
+})();
 var Esc = new EscCommand();
 var Tsc = new TscCommand();
