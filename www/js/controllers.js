@@ -40,18 +40,13 @@ function rgbToPixel(rgbs) {
   }
   return piexlsData;
 }
-function grayScale(imgData) {
-  var rgbs = imgData.data;
-  for (var index = 0; index < rgbs.length; index += 4) {
-    var R = rgbs[index];
-    var G = rgbs[index + 1];
-    var B = rgbs[index + 2];
-    var average = (R + G + B) / 3;
-    rgbs[index] = average;
-    rgbs[index + 1] = average;
-    rgbs[index + 2] = average;
+function threshold(image,threshold) {
+  for (var index = 0; index < image.data.length; index++) {
+    var luminance = (image.data[i] * 0.299) + (image.data[i + 1] * 0.587) + (image.data[i + 2] * 0.114);
+
+    var value = luminance < threshold ? 0 : 255;
+    image.data.fill(value, i, i + 3);
   }
-  imgData.data = rgbs;
 }
 function toEscPrintData(b, width, height) {
   var n = Math.floor((width + 7) / 8);
@@ -122,7 +117,7 @@ function pickerImage(callback) {
 function useEscPrintImage(img) {
   var imageData = getImageData(img);
   // may be no need
-  grayScale(imageData);
+  threshold(imageData);
   var piexlsData = rgbToPixel(imageData.data);
   var width = img.width;
   var height = img.height;
@@ -132,7 +127,7 @@ function useEscPrintImage(img) {
 function useTscPrintImage(img) {
   var imageData = getImageData(img);
   // may be no need
-  grayScale(imageData);
+  threshold(imageData);
   var piexlsData = rgbToPixel(imageData.data);
   var width = img.width;
   var height = img.height;
