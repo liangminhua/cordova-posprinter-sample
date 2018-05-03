@@ -40,12 +40,15 @@ function rgbToPixel(rgbs) {
   }
   return piexlsData;
 }
-function threshold(image,threshold) {
-  for (var index = 0; index < image.data.length; index++) {
-    var luminance = (image.data[i] * 0.299) + (image.data[i + 1] * 0.587) + (image.data[i + 2] * 0.114);
+function threshold(image, threshold) {
+  if (threshold == void 0) {
+    threshold = 128;
+  }
+  for (var index = 0; index < image.data.length; index += 4) {
+    var luminance = (image.data[index] * 0.299) + (image.data[index + 1] * 0.587) + (image.data[index + 2] * 0.114);
 
     var value = luminance < threshold ? 0 : 255;
-    image.data.fill(value, i, i + 3);
+    image.data.fill(value, index, index + 3);
   }
 }
 function toEscPrintData(b, width, height) {
@@ -100,12 +103,12 @@ function pickerImage(callback) {
   // just in case, and visually hide it. And do not forget do remove it
   // once you do not need it anymore.
 
-  input.onchange = function() {
+  input.onchange = function () {
     var file = this.files[0];
     var dataUrlReader = new FileReader();
-    dataUrlReader.onloadend = function(e) {
+    dataUrlReader.onloadend = function (e) {
       var img = new Image();
-      img.onload = function() {
+      img.onload = function () {
         callback(img);
       };
       img.src = dataUrlReader.result;
@@ -137,7 +140,7 @@ function useTscPrintImage(img) {
 angular
   .module("starter.controllers", ["starter.services"])
 
-  .controller("WiFiCtrl", function($scope) {
+  .controller("WiFiCtrl", function ($scope) {
     var socketId = null;
     $scope.ip = "";
     $scope.port = null;
@@ -148,23 +151,23 @@ angular
       var uint8array = new TextEncoder("gb18030", {
         NONSTANDARD_allowLegacyEncoding: true
       }).encode(content);
-      chrome.sockets.tcp.send(socketId, uint8array.buffer, function(result) {
+      chrome.sockets.tcp.send(socketId, uint8array.buffer, function (result) {
         console.log(angular.toJson(result));
       });
     }
     function rawPrint(socketId, uint8array) {
-      chrome.sockets.tcp.send(socketId, uint8array.buffer, function(result) {
+      chrome.sockets.tcp.send(socketId, uint8array.buffer, function (result) {
         console.log(angular.toJson(result));
       });
     }
-    $scope.connect = function(ip, port) {
+    $scope.connect = function (ip, port) {
       console.log(ip + " " + port);
-      chrome.sockets.tcp.create(function(createInfo) {
+      chrome.sockets.tcp.create(function (createInfo) {
         chrome.sockets.tcp.connect(
           createInfo.socketId,
           ip,
           port ? port : 9100,
-          function(result) {
+          function (result) {
             if (!result) {
               console.log("connect success!");
               socketId = createInfo.socketId;
@@ -175,22 +178,22 @@ angular
         );
       });
     };
-    $scope.disconnect = function() {
+    $scope.disconnect = function () {
       if (socketId) {
         chrome.sockets.tcp.disconnect(socketId);
         socketId = null;
       }
     };
-    $scope.print = function() {
+    $scope.print = function () {
       print(socketId, "cordova-posprinter-sample");
     };
-    $scope.useEscCommandPrintImage = function() {
-      pickerImage(function(img) {
+    $scope.useEscCommandPrintImage = function () {
+      pickerImage(function (img) {
         var escCommand = useEscPrintImage(img);
         rawPrint(socketId, escCommand);
       });
     };
-    $scope.printEscCommand = function() {
+    $scope.printEscCommand = function () {
       var escCommand =
         Esc.InitializePrinter +
         Esc.TextAlignRight +
@@ -214,56 +217,56 @@ angular
         Esc.PrintAndFeedMaxLine;
       print(socketId, escCommand);
     };
-    $scope.useTscCommandPrintImage = function() {
-      pickerImage(function(img) {
+    $scope.useTscCommandPrintImage = function () {
+      pickerImage(function (img) {
         var tscCommand = useTscPrintImage(img);
         rawPrint(socketId, tscCommand);
       });
     };
-    $scope.printTscCommand = function() {
+    $scope.printTscCommand = function () {
       var tscCommand =
         Tsc.text(100, 100, "4", 0, 1, 1, "DEMO FOR TEXT") + Tsc.print(1);
       console.log(tscCommand);
       print(socketId, tscCommand);
     };
   })
-  .controller("BluetoothCtrl", function($scope, bluetooth) {
+  .controller("BluetoothCtrl", function ($scope, bluetooth) {
     $scope.bluetoothDevices = [];
-    bluetooth.isEnabled().then(function(isEnabled) {
+    bluetooth.isEnabled().then(function (isEnabled) {
       if (!isEnabled) {
         bluetooth.enable();
       }
     });
-    $scope.refresh = function(params) {
+    $scope.refresh = function (params) {
       $scope.bluetoothDevices.splice(0, $scope.bluetoothDevices.length);
       bluetooth
         .startScan()
         .then(
-          function(success) {
+          function (success) {
             console.log("success:" + angular.toJson(success));
           },
-          function(err) {
+          function (err) {
             console.log(err);
           },
-          function(device) {
+          function (device) {
             $scope.bluetoothDevices.push(device);
             console.log(angular.toJson(device));
           }
         )
-        .finally(function() {
+        .finally(function () {
           // Stop the ion-refresher from spinning
           $scope.$broadcast("scroll.refreshComplete");
         });
     };
   })
-  .controller("BluetoothDetailCtrl", function($scope, $stateParams, bluetooth) {
+  .controller("BluetoothDetailCtrl", function ($scope, $stateParams, bluetooth) {
     $scope.deviceId = $stateParams.deviceId;
-    $scope.connect = function(params) {
-      bluetooth.connect($scope.deviceId).then(null, null, function(res) {
+    $scope.connect = function (params) {
+      bluetooth.connect($scope.deviceId).then(null, null, function (res) {
         alert(angular.toJson(res));
       });
     };
-    $scope.disconnect = function() {
+    $scope.disconnect = function () {
       if ($scope.deviceId) {
         bluetooth.disconnect($scope.deviceId);
       }
@@ -277,23 +280,23 @@ angular
     function rawPrint(uint8array) {
       bluetooth.write(uint8array.buffer, $scope.deviceId);
     }
-    $scope.print = function() {
+    $scope.print = function () {
       var content = "HelloWorld!\n";
       print(content);
     };
-    $scope.useEscCommandPrintImage = function() {
-      pickerImage(function(img) {
+    $scope.useEscCommandPrintImage = function () {
+      pickerImage(function (img) {
         var escCommand = useEscPrintImage(img);
         rawPrint(escCommand);
       });
     };
-    $scope.useTscCommandPrintImage = function() {
-      pickerImage(function(width, height, data) {
+    $scope.useTscCommandPrintImage = function () {
+      pickerImage(function (width, height, data) {
         var tscCommand = useTscPrintImage(img);
         rawPrint(tscCommand);
       });
     };
-    $scope.printEscCommand = function() {
+    $scope.printEscCommand = function () {
       var escCommand =
         Esc.InitializePrinter +
         Esc.TextAlignRight +
@@ -318,13 +321,13 @@ angular
         Esc.cutAndFeedLine();
       print(escCommand);
     };
-    $scope.printTscCommand = function() {
+    $scope.printTscCommand = function () {
       var tscCommand =
         Tsc.text(100, 100, "4", 0, 1, 1, "DEMO FOR TEXT") + Tsc.print(1);
       print(tscCommand);
     };
   })
-  .controller("USBCtrl", function($scope, $window) {
+  .controller("USBCtrl", function ($scope, $window) {
     $scope.devices = [];
     function getDevices() {
       var deviceFilter = [
@@ -346,7 +349,7 @@ angular
         { vendorId: 8137, interfaceClass: 7, interfaceSubclass: 1 }
       ];
       // maybe you need to remove or modify the deviceFilter.
-      $window.chrome.usb.getDevices({ filters: deviceFilter }, function(
+      $window.chrome.usb.getDevices({ filters: deviceFilter }, function (
         devices
       ) {
         $scope.devices.splice(0, $scope.devices.length);
@@ -356,20 +359,20 @@ angular
         console.log(angular.toJson(devices));
       });
     }
-    $scope.$on("$ionicView.enter", function(event, data) {
+    $scope.$on("$ionicView.enter", function (event, data) {
       // handle event
       getDevices();
     });
-    $scope.refresh = function() {
+    $scope.refresh = function () {
       getDevices();
     };
-    $scope.print = function(device) {
+    $scope.print = function (device) {
       console.log(angular.toJson(device));
       var uint8array = new TextEncoder("gb18030", {
         NONSTANDARD_allowLegacyEncoding: true
       }).encode("print to usb");
-      $window.chrome.usb.openDevice(device, function(handle) {
-        $window.chrome.usb.listInterfaces(handle, function(descriptors) {
+      $window.chrome.usb.openDevice(device, function (handle) {
+        $window.chrome.usb.listInterfaces(handle, function (descriptors) {
           var inEndpoint = null;
           var outEndpoint = null;
           for (var index = 0; index < interfaceDescriptors.length; index++) {
@@ -387,7 +390,7 @@ angular
                 $window.chrome.usb.claimInterface(
                   handle,
                   interface.interfaceNumber,
-                  function() {
+                  function () {
                     $window.chrome.usb.bulkTransfer(
                       handle,
                       {
@@ -395,12 +398,12 @@ angular
                         endpoint: outEndpoint.address,
                         data: uint8array.buffer
                       },
-                      function(info) {
+                      function (info) {
                         console.log(angular.toJson(info));
                         $window.chrome.usb.releaseInterface(
                           handle,
                           interface.interfaceNumber,
-                          function() {}
+                          function () { }
                         );
                       }
                     );
