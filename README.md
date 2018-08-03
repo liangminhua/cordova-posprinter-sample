@@ -27,3 +27,9 @@ Bluetooth low energy(cordova plugin) - [https://github.com/randdusing/cordova-pl
 Bluetooth(cordova plugin) - [https://github.com/don/BluetoothSerial](https://github.com/don/BluetoothSerial)
 
 USB(cordova plugin) - [https://github.com/MobileChromeApps/cordova-plugin-chrome-apps-usb](https://github.com/MobileChromeApps/cordova-plugin-chrome-apps-usb)
+
+## Related projects
+
+EscPosEncoder - [https://github.com/NielsLeenheer/EscPosEncoder)
+
+node-escpos - [https://github.com/song940/node-escpos)

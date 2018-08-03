@@ -10,7 +10,7 @@
 * 编译和运行 IOS 项目: `cordova run ios / ionic run ios -l -c`
 * 编译和运行 Android 项目: `cordova run android / ionic run android -l -c`
 
-## Resources
+## 资源
 
 AngularJS - [http://www.angularjs.org](http://www.angularjs.org)
 
@@ -25,3 +25,9 @@ Bluetooth low energy(cordova plugin) - [https://github.com/randdusing/cordova-pl
 Bluetooth(cordova plugin) - [https://github.com/don/BluetoothSerial](https://github.com/don/BluetoothSerial)
 
 USB(cordova plugin) - [https://github.com/MobileChromeApps/cordova-plugin-chrome-apps-usb](https://github.com/MobileChromeApps/cordova-plugin-chrome-apps-usb)
+
+## 相关项目
+
+EscPosEncoder - [https://github.com/NielsLeenheer/EscPosEncoder)
+
+node-escpos - [https://github.com/song940/node-escpos)
