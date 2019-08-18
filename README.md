@@ -33,3 +33,7 @@ USB(cordova plugin) - [https://github.com/MobileChromeApps/cordova-plugin-chrome
 EscPosEncoder - [https://github.com/NielsLeenheer/EscPosEncoder)
 
 node-escpos - [https://github.com/song940/node-escpos)
+
+## Support
+
+Contact me for commercial support.
